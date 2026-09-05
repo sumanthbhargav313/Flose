@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Flose turns a short wellbeing check-in into a practical movement, meal, and recovery plan.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; base-uri 'self'; form-action 'self'">
+  <title>Flose · Your close companion</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to content</a>
+  <header class="site-header" aria-label="Primary navigation">
+    <a class="brand" href="#home" data-screen-link="home" aria-label="Flose home">Fl<span>o</span>se</a>
+    <p class="nav-note">A friend who stays close</p>
+    <nav>
+      <button class="nav-button" type="button" data-screen="home" aria-current="page">Home</button>
+      <button class="nav-button" type="button" data-screen="planner">Build my day</button>
+      <a class="nav-button" href="https://in.linkedin.com/in/sumanth-bhargav-k-a-8265a5175" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <section id="home-screen" class="screen" aria-labelledby="home-title">
+      <section class="hero">
+        <span class="eyebrow">● Your everyday support circle</span>
+        <h1 id="home-title">Welcome to <span>Flose</span></h1>
+        <p>Flose comes from a friend who stays close. At its heart is Momo—your main companion who listens to how your day feels, brings the right specialists together, and turns small signals into a plan you can actually follow.</p>
+        <div class="hero-points" aria-label="Flose principles">
+          <span><strong>Private</strong> by design</span>
+          <span><strong>One</strong> thoughtful check-in</span>
+          <span><strong>Three</strong> coordinated companions</span>
+        </div>
+      </section>
+
+      <p class="section-kicker">Meet your circle</p>
+      <h2>Different strengths. One plan built around you.</h2>
+      <section class="card-grid" aria-label="Flose companions">
+        <article class="companion-card featured">
+          <div class="avatar momo" aria-hidden="true">MO</div>
+          <span class="role">Main companion</span>
+          <h3>Momo</h3>
+          <p>Connects your sleep, mood, stress, meals, movement, and schedule so the day feels coherent.</p>
+        </article>
+        <article class="companion-card">
+          <div class="avatar" aria-hidden="true">PT</div>
+          <span class="role">Personal trainer</span>
+          <h3>Your movement guide</h3>
+          <p>Shapes a realistic session around your energy, recent activity, preferred movement, and available time.</p>
+        </article>
+        <article class="companion-card">
+          <div class="avatar chef" aria-hidden="true">CH</div>
+          <span class="role">Chef</span>
+          <h3>Your meal guide</h3>
+          <p>Suggests practical meals for your diet and location, then creates a useful grocery restock list.</p>
+        </article>
+      </section>
+
+      <p class="section-kicker">How Flose helps</p>
+      <h2>A little context becomes a more thoughtful day.</h2>
+      <section class="steps" aria-label="How Flose works">
+        <article><span>01</span><h3>Tell Momo what matters</h3><p>Share today’s sleep, stress, mood, diet, location, schedule, and movement preference.</p></article>
+        <article><span>02</span><h3>Your companions coordinate</h3><p>The Trainer and Chef shape their advice while Momo protects the rhythm of your whole day.</p></article>
+        <article><span>03</span><h3>Leave with one clear plan</h3><p>Get movement, meals, recovery cues, and commitments in one private browser experience.</p></article>
+      </section>
+    </section>
+
+    <section id="planner-screen" class="screen" aria-labelledby="planner-title" hidden>
+      <section class="planner-hero">
+        <span class="step-pill">Your check-in · About 2 minutes</span>
+        <h1 id="planner-title">Help Momo understand your day.</h1>
+        <p>A few honest preferences help your Flose circle build movement, meals, and recovery around the day you actually have.</p>
+      </section>
+
+      <form id="preference-form">
+        <fieldset>
+          <legend>How are you arriving today?</legend>
+          <p class="form-note">These signals help Momo balance effort and recovery.</p>
+          <div class="form-grid three">
+            <label>Sleep last night (hours)<input id="sleep" name="sleep" type="number" min="0" max="12" step="0.5" value="7" required></label>
+            <label>Stress level (1–10)<input id="stress" name="stress" type="number" min="1" max="10" step="1" value="5" required></label>
+            <label>Mood<select id="mood" name="mood"><option>Normal</option><option>Bad</option><option>Good</option></select></label>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>What fits your life?</legend>
+          <p class="form-note">Meals adapt to your preference and what is available around you.</p>
+          <div class="choice-group" role="radiogroup" aria-labelledby="diet-label">
+            <span id="diet-label" class="choice-label">Diet</span>
+            <label><input type="radio" name="diet" value="veg" checked> Veg</label>
+            <label><input type="radio" name="diet" value="non-veg"> Non-veg</label>
+            <label><input type="radio" name="diet" value="jain"> Jain</label>
+            <label><input type="radio" name="diet" value="flexible"> Flexible</label>
+          </div>
+          <label>Location<input id="location" name="location" type="text" maxlength="80" placeholder="City or area, for example Bengaluru" required></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Movement and schedule</legend>
+          <p class="form-note">Choose your workout time or let Momo estimate it from today’s available space.</p>
+          <div class="form-grid two">
+            <label>Preferred movement<select id="activity" name="activity"><option>Gym</option><option>Walk</option><option>Yoga</option><option>Swim</option></select></label>
+            <label>Active days in the last 7 days<input id="active-days" name="activeDays" type="number" min="0" max="7" step="1" value="0" required></label>
+          </div>
+          <div class="choice-group" role="radiogroup" aria-labelledby="workout-label">
+            <span id="workout-label" class="choice-label">Workout time</span>
+            <label><input type="radio" name="timeMode" value="manual" checked> I’ll choose the time</label>
+            <label><input type="radio" name="timeMode" value="estimate"> Let Momo estimate</label>
+          </div>
+          <label id="manual-time">Time available for workout (minutes)<input id="available" name="available" type="number" min="0" max="90" step="5" value="30"></label>
+          <div id="estimated-time" hidden>
+            <label>Hours already scheduled today<input id="scheduled" name="scheduled" type="number" min="0" max="16" step="0.5" value="8"></label>
+            <p id="estimate-copy" class="estimate" aria-live="polite"></p>
+          </div>
+          <label>Today’s commitments (one per line)<textarea id="commitments" name="commitments" rows="4" placeholder="Team call at 10&#10;School pickup at 4&#10;Dinner with family"></textarea></label>
+        </fieldset>
+        <button class="primary-button" type="submit">Create my Flose plan →</button>
+      </form>
+
+      <section id="plan-result" class="result" aria-live="polite" tabindex="-1" hidden>
+        <div class="result-head"><h2>Your Flose plan is ready.</h2><p>Momo combined today’s signals into one practical rhythm.</p></div>
+        <div class="result-grid">
+          <article id="momo-result"></article>
+          <article id="trainer-result"></article>
+          <article id="chef-result"></article>
+        </div>
+        <p class="privacy-note">Created in your browser. Your check-in was not uploaded.</p>
+      </section>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span><strong>Flose</strong> · A friend who stays close.</span>
+    <span>Your check-in stays in this browser · <a href="https://in.linkedin.com/in/sumanth-bhargav-k-a-8265a5175" target="_blank" rel="noopener noreferrer">Contact us on LinkedIn ↗</a></span>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>
