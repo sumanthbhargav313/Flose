@@ -1,0 +1,561 @@
+{
+  "version": 1,
+  "currency": "INR",
+  "price_date": "2026-09-03",
+  "source_url": "https://fcainfoweb.nic.in/Reports/DB/DBprices.aspx",
+  "price_scope": "All-India average retail prices; not locality or store quotes.",
+  "outside_note": "Outside prices are planning estimates, not restaurant quotes. Confirm menu prices, taxes and delivery fees through the locality search links.",
+  "ingredients": {
+    "rice": {
+      "name": "Rice",
+      "unit": "g",
+      "base_quantity": 1000,
+      "price_paise": 4621
+    },
+    "atta": {
+      "name": "Atta (Wheat)",
+      "unit": "g",
+      "base_quantity": 1000,
+      "price_paise": 3739
+    },
+    "moong": {
+      "name": "Moong Dal",
+      "unit": "g",
+      "base_quantity": 1000,
+      "price_paise": 11181
+    },
+    "urad": {
+      "name": "Urad Dal",
+      "unit": "g",
+      "base_quantity": 1000,
+      "price_paise": 12260
+    },
+    "suji": {
+      "name": "Suji (whole)",
+      "unit": "g",
+      "base_quantity": 1000,
+      "price_paise": 4726
+    },
+    "besan": {
+      "name": "Besan",
+      "unit": "g",
+      "base_quantity": 1000,
+      "price_paise": 9625
+    },
+    "milk": {
+      "name": "Milk (₹/ltr)",
+      "unit": "ml",
+      "base_quantity": 1000,
+      "price_paise": 6112
+    },
+    "tomato": {
+      "name": "Tomato",
+      "unit": "g",
+      "base_quantity": 1000,
+      "price_paise": 3882
+    },
+    "brinjal": {
+      "name": "Brinjal",
+      "unit": "g",
+      "base_quantity": 1000,
+      "price_paise": 4301
+    },
+    "banana": {
+      "name": "Banana",
+      "unit": "g",
+      "base_quantity": 1000,
+      "price_paise": 5004
+    },
+    "oil": {
+      "name": "Sunflower Oil (Packed)",
+      "unit": "g",
+      "base_quantity": 1000,
+      "price_paise": 19271
+    },
+    "salt": {
+      "name": "Salt Pack (Iodised)",
+      "unit": "g",
+      "base_quantity": 1000,
+      "price_paise": 2236
+    },
+    "cumin": {
+      "name": "Cummin Seed (whole)",
+      "unit": "g",
+      "base_quantity": 100,
+      "price_paise": 4069
+    },
+    "turmeric": {
+      "name": "Turmeric (powder)",
+      "unit": "g",
+      "base_quantity": 50,
+      "price_paise": 1666
+    },
+    "eggs": {
+      "name": "Eggs",
+      "unit": "egg",
+      "base_quantity": 12,
+      "price_paise": 8356
+    }
+  },
+  "profiles": [
+    {
+      "id": "south",
+      "name": "Southern Indian options",
+      "aliases": [
+        "bengaluru",
+        "bangalore",
+        "mysuru",
+        "mysore",
+        "chennai",
+        "hyderabad",
+        "coimbatore",
+        "madurai",
+        "kochi",
+        "thiruvananthapuram",
+        "mangaluru"
+      ],
+      "source": "https://old.karnatakatourism.org/tour-item/cuisines/",
+      "typical": [
+        "Idli or upma",
+        "Rice, dal and vegetables",
+        "Fruit or a small savoury snack",
+        "Dosa or a lighter rice-and-dal plate"
+      ]
+    },
+    {
+      "id": "west",
+      "name": "Western Indian options",
+      "aliases": [
+        "mumbai",
+        "pune",
+        "nashik",
+        "nagpur",
+        "ahmedabad",
+        "surat",
+        "vadodara",
+        "jaipur"
+      ],
+      "source": "https://maharashtratourism.gov.in/districts/jalna/",
+      "typical": [
+        "Poha or a besan chilla",
+        "Roti, dal and vegetables",
+        "Fruit or dhokla",
+        "Khichdi or a simple thali"
+      ]
+    },
+    {
+      "id": "north",
+      "name": "Northern Indian options",
+      "aliases": [
+        "delhi",
+        "new delhi",
+        "gurugram",
+        "gurgaon",
+        "noida",
+        "chandigarh",
+        "lucknow",
+        "amritsar"
+      ],
+      "source": "https://www.incredibleindia.gov.in/en/delhi/delhi/a-captivating-journey-of-flavours",
+      "typical": [
+        "Chilla or roti with curd",
+        "Dal, roti and vegetables",
+        "Fruit or roasted chana",
+        "A lighter dal-and-roti plate"
+      ]
+    },
+    {
+      "id": "east",
+      "name": "Eastern Indian options",
+      "aliases": [
+        "kolkata",
+        "howrah",
+        "bhubaneswar",
+        "patna",
+        "ranchi"
+      ],
+      "source": "https://www.incredibleindia.gov.in/en/west-bengal",
+      "typical": [
+        "Roti or a warm grain breakfast",
+        "Rice, dal and vegetables",
+        "Fruit or a small savoury snack",
+        "Khichuri or rice with dal"
+      ]
+    },
+    {
+      "id": "general",
+      "name": "Flexible Indian options",
+      "aliases": [],
+      "source": "",
+      "typical": [
+        "A grain-and-protein breakfast",
+        "Rice or roti with dal",
+        "Fruit with milk or a suitable alternative",
+        "A simple cooked grain, dal and vegetable plate"
+      ]
+    }
+  ],
+  "recipes": [
+    {
+      "id": "upma",
+      "name": "Tomato upma with a glass of milk",
+      "slots": [
+        "breakfast"
+      ],
+      "regions": [
+        "south"
+      ],
+      "diets": [
+        "veg",
+        "non-veg",
+        "flexible",
+        "jain"
+      ],
+      "minutes": 20,
+      "ingredients": {
+        "suji": 80,
+        "tomato": 100,
+        "oil": 5,
+        "salt": 1,
+        "cumin": 1,
+        "milk": 200
+      },
+      "tags": [
+        "upma",
+        "savory",
+        "savoury"
+      ],
+      "instructions": "Toast semolina, simmer with tomato, cumin and water; serve with milk. Keep seasoning mild if preferred.",
+      "outside_paise": 7000
+    },
+    {
+      "id": "chilla",
+      "name": "Besan chilla with tomato",
+      "slots": [
+        "breakfast"
+      ],
+      "regions": [
+        "north",
+        "west",
+        "general"
+      ],
+      "diets": [
+        "veg",
+        "non-veg",
+        "flexible",
+        "jain"
+      ],
+      "minutes": 20,
+      "ingredients": {
+        "besan": 90,
+        "tomato": 100,
+        "oil": 5,
+        "salt": 1,
+        "cumin": 1
+      },
+      "tags": [
+        "chilla",
+        "crunchy",
+        "savory",
+        "savoury"
+      ],
+      "instructions": "Whisk besan with water and cumin. Add chopped tomato and pan-cook in the measured oil.",
+      "outside_paise": 6000
+    },
+    {
+      "id": "porridge",
+      "name": "Warm suji porridge with banana and milk",
+      "slots": [
+        "breakfast"
+      ],
+      "regions": [
+        "general"
+      ],
+      "diets": [
+        "veg",
+        "non-veg",
+        "flexible",
+        "jain"
+      ],
+      "minutes": 12,
+      "ingredients": {
+        "suji": 70,
+        "milk": 250,
+        "banana": 120
+      },
+      "tags": [
+        "sweet",
+        "dessert",
+        "porridge"
+      ],
+      "instructions": "Simmer semolina in milk, stirring. Add ripe banana after cooking for sweetness.",
+      "outside_paise": 7000
+    },
+    {
+      "id": "egg_roti",
+      "name": "Egg and tomato roti",
+      "slots": [
+        "breakfast",
+        "dinner"
+      ],
+      "regions": [
+        "north",
+        "east"
+      ],
+      "diets": [
+        "non-veg",
+        "flexible"
+      ],
+      "minutes": 18,
+      "ingredients": {
+        "eggs": 2,
+        "atta": 90,
+        "tomato": 100,
+        "oil": 5,
+        "salt": 1,
+        "cumin": 1
+      },
+      "tags": [
+        "egg",
+        "roll",
+        "wrap"
+      ],
+      "instructions": "Cook the eggs fully with tomato. Serve in freshly cooked rotis.",
+      "outside_paise": 10000
+    },
+    {
+      "id": "dal_rice",
+      "name": "Rice, moong dal and sautéed brinjal",
+      "slots": [
+        "lunch",
+        "dinner"
+      ],
+      "regions": [
+        "south",
+        "east"
+      ],
+      "diets": [
+        "veg",
+        "non-veg",
+        "flexible"
+      ],
+      "minutes": 30,
+      "ingredients": {
+        "rice": 90,
+        "moong": 60,
+        "brinjal": 150,
+        "tomato": 80,
+        "oil": 8,
+        "salt": 1,
+        "cumin": 1,
+        "turmeric": 1
+      },
+      "tags": [
+        "rice",
+        "dal",
+        "thali"
+      ],
+      "instructions": "Pressure-cook dal and rice; sauté the vegetables separately with cumin and turmeric.",
+      "outside_paise": 12000
+    },
+    {
+      "id": "dal_roti",
+      "name": "Roti with tomato dal",
+      "slots": [
+        "lunch",
+        "dinner"
+      ],
+      "regions": [
+        "north",
+        "west"
+      ],
+      "diets": [
+        "veg",
+        "non-veg",
+        "flexible",
+        "jain"
+      ],
+      "minutes": 28,
+      "ingredients": {
+        "atta": 100,
+        "moong": 70,
+        "tomato": 150,
+        "oil": 7,
+        "salt": 1,
+        "cumin": 1,
+        "turmeric": 1
+      },
+      "tags": [
+        "roti",
+        "dal",
+        "thali"
+      ],
+      "instructions": "Pressure-cook moong with tomato and turmeric. Make rotis and finish the dal with a little cumin oil.",
+      "outside_paise": 10000
+    },
+    {
+      "id": "khichdi",
+      "name": "One-pot tomato and moong khichdi",
+      "slots": [
+        "lunch",
+        "dinner"
+      ],
+      "regions": [
+        "general",
+        "west",
+        "east"
+      ],
+      "diets": [
+        "veg",
+        "non-veg",
+        "flexible",
+        "jain"
+      ],
+      "minutes": 22,
+      "ingredients": {
+        "rice": 70,
+        "moong": 70,
+        "tomato": 150,
+        "oil": 6,
+        "salt": 1,
+        "cumin": 1,
+        "turmeric": 1
+      },
+      "tags": [
+        "khichdi",
+        "khichuri",
+        "comfort",
+        "rice"
+      ],
+      "instructions": "Pressure-cook rinsed rice, moong, tomato and spices together; adjust water to your preferred texture.",
+      "outside_paise": 9000
+    },
+    {
+      "id": "egg_rice",
+      "name": "Egg and vegetable rice",
+      "slots": [
+        "lunch",
+        "dinner"
+      ],
+      "regions": [
+        "south",
+        "east"
+      ],
+      "diets": [
+        "non-veg",
+        "flexible"
+      ],
+      "minutes": 25,
+      "ingredients": {
+        "rice": 90,
+        "eggs": 2,
+        "brinjal": 150,
+        "tomato": 80,
+        "oil": 7,
+        "salt": 1,
+        "cumin": 1
+      },
+      "tags": [
+        "egg",
+        "rice",
+        "biryani"
+      ],
+      "instructions": "Cook rice separately. Fully cook the eggs and vegetables, then fold together; season to taste.",
+      "outside_paise": 13000
+    },
+    {
+      "id": "roti_pizza",
+      "name": "Tomato besan roti pizza",
+      "slots": [
+        "lunch",
+        "dinner"
+      ],
+      "regions": [
+        "general"
+      ],
+      "diets": [
+        "veg",
+        "non-veg",
+        "flexible",
+        "jain"
+      ],
+      "minutes": 25,
+      "ingredients": {
+        "atta": 90,
+        "besan": 60,
+        "tomato": 150,
+        "oil": 7,
+        "salt": 1,
+        "cumin": 1
+      },
+      "tags": [
+        "pizza",
+        "cheesy"
+      ],
+      "instructions": "Cook a roti base. Top with a thick, fully cooked tomato-besan sauce, cover briefly and serve. This version has no cheese.",
+      "outside_paise": 13000
+    },
+    {
+      "id": "banana_milk",
+      "name": "Banana and milk",
+      "slots": [
+        "snacks"
+      ],
+      "regions": [
+        "general"
+      ],
+      "diets": [
+        "veg",
+        "non-veg",
+        "flexible",
+        "jain"
+      ],
+      "minutes": 2,
+      "ingredients": {
+        "banana": 150,
+        "milk": 200
+      },
+      "tags": [
+        "sweet",
+        "fruit",
+        "banana"
+      ],
+      "instructions": "Serve a banana with milk; choose warm or cool milk to taste.",
+      "outside_paise": 4000
+    },
+    {
+      "id": "mini_chilla",
+      "name": "Small savoury besan chilla",
+      "slots": [
+        "snacks"
+      ],
+      "regions": [
+        "north",
+        "west",
+        "general"
+      ],
+      "diets": [
+        "veg",
+        "non-veg",
+        "flexible",
+        "jain"
+      ],
+      "minutes": 12,
+      "ingredients": {
+        "besan": 45,
+        "tomato": 60,
+        "oil": 3,
+        "salt": 1,
+        "cumin": 1
+      },
+      "tags": [
+        "crispy",
+        "salty",
+        "snack",
+        "chips"
+      ],
+      "instructions": "Make a small tomato-besan pancake in measured oil; serve freshly cooked.",
+      "outside_paise": 4000
+    }
+  ]
+}

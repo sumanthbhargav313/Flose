@@ -107,14 +107,37 @@ input:focus-visible, select:focus-visible, textarea:focus-visible { border-color
 .site-footer a { color: var(--primary-hover); font-weight: 700; text-decoration: none; }
 .site-footer a:hover, .site-footer a:focus-visible { color: #1e1b4b; text-decoration: underline; }
 [hidden] { display: none !important; }
+.budget-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin: 1rem 0; }
+.budget-card { padding: 1.1rem; color: var(--ink); background: var(--soft-indigo); border: 1px solid #c7d2fe; border-radius: 1rem; overflow-wrap: anywhere; }
+.budget-card small { display: block; color: var(--muted); }
+.budget-card strong { display: block; font-size: clamp(1.15rem, 2.4vw, 1.5rem); margin-top: .4rem; }
+.budget-warning { color: #312e81; background: #eef2ff; border: 2px solid #6366f1; padding: 1rem; border-radius: .85rem; }
+.food-details { margin: 1rem 0 2rem; padding: 1.2rem; color: var(--ink); background: white; border: 1px solid var(--line); border-radius: 1rem; }
+.food-details summary { padding: .4rem; color: #3730a3; cursor: pointer; font-weight: 700; }
+.food-details summary:hover { color: #1e1b4b; background: #eef2ff; border-radius: .4rem; }
+.food-details summary:focus-visible, .food-details a:focus-visible, .table-scroll:focus-visible { outline: 3px solid #818cf8; outline-offset: 3px; }
+.food-details p, .food-details li { line-height: 1.6; }
+.food-details a { color: #3730a3; text-underline-offset: 3px; }
+.food-details a:hover { color: #1e1b4b; }
+.meal-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.meal-card { padding: 1rem; background: #f4f7ff; border: 1px solid var(--line); border-radius: .85rem; }
+.meal-card h4 { margin: .2rem 0; }
+.table-scroll { max-width: 100%; overflow-x: auto; margin: 1.2rem 0; }
+.price-table { border-collapse: collapse; width: 100%; color: #16213e; background: white; }
+.price-table caption { text-align: left; padding: .8rem 0; color: #536179; }
+.price-table th { background: #eef2ff; text-align: left; }
+.price-table th, .price-table td { padding: .8rem; border-bottom: 1px solid #dbe3f0; min-width: 110px; }
+#profile-summary { overflow-wrap: anywhere; }
 
 @media (max-width: 800px) {
   .site-header { grid-template-columns: 1fr; gap: .6rem; padding: 1rem 0; }
   .nav-note { display: none; }
   nav { flex-wrap: wrap; gap: .5rem; }
-  .nav-button { flex: 1; padding-inline: .8rem; }
+  .nav-button { flex: 1; padding-inline: .6rem; font-size: clamp(.8rem, 3.6vw, .95rem); white-space: nowrap; }
   .hero { min-height: 520px; padding: 3.4rem 1.35rem; border-radius: 1.35rem; }
   .hero h1 { font-size: 3.25rem; }
   .card-grid, .result-grid, .steps, .form-grid.three, .form-grid.two { grid-template-columns: 1fr; }
   .site-footer { flex-direction: column; }
+  .budget-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .meal-grid { grid-template-columns: 1fr; }
 }

@@ -74,7 +74,25 @@
 
       <form id="preference-form">
         <fieldset>
-          <legend>How are you arriving today?</legend>
+          <legend>First, a little about you</legend>
+          <p class="form-note">Momo plans for one adult. Budgets are in Indian rupees (₹).</p>
+          <div class="form-grid three">
+            <label>Your name<input id="user-name" name="userName" maxlength="60" autocomplete="given-name" required></label>
+            <label>Age (years)<input id="age" name="age" type="number" min="18" max="120" step="1" value="25" required></label>
+            <label>Location<input id="location" name="location" maxlength="80" placeholder="Locality, city — e.g. Whitefield, Bengaluru" required></label>
+          </div>
+          <div class="form-grid two">
+            <label>Height (cm)<input id="height" name="height" type="number" min="100" max="250" step="0.5" value="170" required></label>
+            <label>Weight (kg)<input id="weight" name="weight" type="number" min="25" max="350" step="0.5" value="70" required></label>
+            <label>Daily outside food budget (₹)<input id="food-budget" name="foodBudget" type="number" min="0" max="100000" step="0.01" value="400" required></label>
+            <label>Monthly grocery budget (₹)<input id="grocery-budget" name="groceryBudget" type="number" min="0" max="1000000" step="0.01" value="6000" required></label>
+            <label>Outside food spent today (₹)<input id="outside-spent" name="outsideSpent" type="number" min="0" max="1000000" step="0.01" value="0" required></label>
+            <label>Groceries spent this month (₹)<input id="grocery-spent" name="grocerySpent" type="number" min="0" max="1000000" step="0.01" value="0" required></label>
+          </div>
+          <p class="form-note">Enter spending before this plan. Balances are projections; creating another plan does not record a purchase. Update spending from your receipts each visit.</p>
+        </fieldset>
+        <fieldset>
+          <legend>Your current state</legend>
           <p class="form-note">These signals help Momo balance effort and recovery.</p>
           <div class="form-grid three">
             <label>Sleep last night (hours)<input id="sleep" name="sleep" type="number" min="0" max="12" step="0.5" value="7" required></label>
@@ -85,7 +103,7 @@
 
         <fieldset>
           <legend>What fits your life?</legend>
-          <p class="form-note">Meals adapt to your preference and what is available around you.</p>
+          <p class="form-note">Meals start with your diet, regional food context, budget and time.</p>
           <div class="choice-group" role="radiogroup" aria-labelledby="diet-label">
             <span id="diet-label" class="choice-label">Diet</span>
             <label><input type="radio" name="diet" value="veg" checked> Veg</label>
@@ -93,7 +111,14 @@
             <label><input type="radio" name="diet" value="jain"> Jain</label>
             <label><input type="radio" name="diet" value="flexible"> Flexible</label>
           </div>
-          <label>Location<input id="location" name="location" type="text" maxlength="80" placeholder="City or area, for example Bengaluru" required></label>
+          <label>Any cravings? (optional)<input id="cravings" name="cravings" maxlength="200" placeholder="Sweet, savoury, pizza, egg roll…"></label>
+          <div class="choice-group" role="radiogroup" aria-labelledby="food-mode-label">
+            <span id="food-mode-label" class="choice-label">Where will your meals come from?</span>
+            <label><input type="radio" name="foodMode" value="home" checked> Prepare at home</label>
+            <label><input type="radio" name="foodMode" value="outside"> Eat outside</label>
+          </div>
+          <label id="cooking-time">Total time for food preparation today (minutes)<input id="cooking" name="cooking" type="number" min="0" max="240" step="5" value="90" required></label>
+          <p class="form-note">Home costs cover ingredient portions for one adult, not full packet purchases. Outside prices are estimates; check nearby menus and fees before ordering.</p>
         </fieldset>
 
         <fieldset>
@@ -120,6 +145,8 @@
 
       <section id="plan-result" class="result" aria-live="polite" tabindex="-1" hidden>
         <div class="result-head"><h2>Your Flose plan is ready.</h2><p>Momo combined today’s signals into one practical rhythm.</p></div>
+        <p id="profile-summary"></p>
+        <section id="food-result" aria-label="Food budget and local meals"></section>
         <div class="result-grid">
           <article id="momo-result"></article>
           <article id="trainer-result"></article>
@@ -134,6 +161,8 @@
     <span><strong>Flose</strong> · A friend who stays close.</span>
     <span>Your check-in stays in this browser · <a href="https://in.linkedin.com/in/sumanth-bhargav-k-a-8265a5175" target="_blank" rel="noopener noreferrer">Contact us on LinkedIn ↗</a></span>
   </footer>
+  <script src="catalog.js"></script>
+  <script src="food.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
