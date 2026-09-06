@@ -1,10 +1,15 @@
 [Experience Flose](https://sumanthbhargav313.github.io/Flose/)
+[Observability Dashboard](http://localhost:3000/d/flose-agentic-ai/flose-agentic-ai-observability)
 
 # Flose
 
 A friend who stays close. Momo coordinates your daily rhythm, movement, and meals.
 Select **Build my day** to create a plan in your browser. Check-ins are never uploaded;
 profiles and up to 90 recommendations per name-and-code pair are remembered in that browser only.
+
+The dashboard link on line 2 opens the private operational console when the Docker or
+Kubernetes observability stack is running locally. It is separate from this static public
+experience so profile content remains in the browser and telemetry stays operator-controlled.
 
 ## Remembered profiles — September 6, 2026
 
