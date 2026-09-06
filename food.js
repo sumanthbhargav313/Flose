@@ -44,6 +44,7 @@ window.FloseFood = (() => {
     if (!["home", "outside"].includes(c.food_mode) || !["veg", "non-veg", "jain", "flexible"].includes(c.diet_preference)) throw new Error("Choose a supported food mode and diet.");
     if (typeof c.cravings !== "string" || c.cravings.length > 200) throw new Error("Keep cravings within 200 characters.");
     if (!Array.isArray(c.commitments) || c.commitments.some(item => typeof item !== "string")) throw new Error("Enter commitments as text.");
+    if (!Array.isArray(c.previous_meals || []) || (c.previous_meals || []).length > 12) throw new Error("Previous meals must be a short list.");
   }
   function ingredientRows(recipes, catalog, location) {
     const amounts = {};
@@ -73,6 +74,7 @@ window.FloseFood = (() => {
     const recovery = c.sleep_hours < 6 || c.stress >= 8 || c.mood <= 2;
     if (recovery || c.commitments.length >= 3) cooking = Math.min(cooking, 60);
     const cravings = new Set(words(c.cravings));
+    const previousMeals = new Set((c.previous_meals || []).map(item => item.split(":").at(-1).trim().toLocaleLowerCase("en-IN")));
     const matches = (r) => r.tags.some(t => cravings.has(t));
     const eligible = catalog.recipes.filter(r => r.diets.includes(c.diet_preference));
     const choices = slots.map(slot => eligible.filter(r => r.slots.includes(slot)));
@@ -85,12 +87,13 @@ window.FloseFood = (() => {
       let score = recipes.reduce((s, r) => s + (r.regions.includes(profile.id) ? 3 : 0) + (c.diet_preference === "non-veg" && "eggs" in r.ingredients ? 2 : 0), 0);
       if (recipes.some(matches)) score += 6;
       if (recipes[1].id === recipes[3].id) score -= 4;
-      return { recipes, rows, total, minutes, score, fitsTime: !home || minutes <= cooking };
+      const repeated = recipes.filter(r => previousMeals.has(r.name.toLocaleLowerCase("en-IN"))).length;
+      return { recipes, rows, total, minutes, score, repeated, fitsTime: !home || minutes <= cooking };
     });
     const fitting = candidates.filter(r => r.total <= allowance && r.fitsTime);
     const chosen = fitting.length
-      ? fitting.sort((a, b) => b.score - a.score || a.total - b.total || a.minutes - b.minutes)[0]
-      : candidates.sort((a, b) => Number(b.fitsTime) - Number(a.fitsTime) || a.total - b.total || a.minutes - b.minutes)[0];
+      ? fitting.sort((a, b) => a.repeated - b.repeated || b.score - a.score || a.total - b.total || a.minutes - b.minutes)[0]
+      : candidates.sort((a, b) => Number(b.fitsTime) - Number(a.fitsTime) || a.repeated - b.repeated || a.total - b.total || a.minutes - b.minutes)[0];
     const notes = [];
     if (!fitting.length) notes.push("No complete four-meal plan fits all limits. The closest option is shown; review the shortfall or cooking time before using it.");
     notes.push(profile.id === "general"
@@ -99,6 +102,9 @@ window.FloseFood = (() => {
     if (c.cravings) notes.push(chosen.recipes.some(matches)
       ? "A diet-compatible option reflects your craving."
       : "Your craving could not be matched within the catalog and limits; your diet preference takes priority.");
+    if (previousMeals.size) notes.push(chosen.repeated === 0
+      ? "Meals were rotated away from your latest recommendation."
+      : "Some meals repeat because the current diet, budget, or time limits leave no fully different four-meal plan.");
     if (c.diet_preference === "jain") notes.push("No root vegetables, onion, garlic or eggs in these recipes. Confirm ingredients and your own observance when ordering outside.");
     if (recovery) notes.push("A low-energy day: keep preparation simple and seasoning comfortable.");
     if (user.age >= 65) notes.push("Choose a texture you find comfortable and keep regular meal breaks.");

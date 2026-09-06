@@ -16,6 +16,8 @@ profiles and up to 90 recommendations per name-and-code pair are remembered in t
 - Returning profiles show check-in count, average sleep/stress, frequent movement, and
   the latest recommendation. Profile history stays in browser `localStorage` and is
   capped at 90 events.
+- Chef uses the latest saved meal recommendation to rotate toward different meals on the
+  next plan, without relaxing diet, budget, cooking-time, or locality constraints.
 - Codes may contain letters, numbers, or special characters and are stored as salted
   PBKDF2 hashes, never plain text. There is currently no recovery or code-change flow.
   This remains local convenience protection, not global or cross-device authentication.
@@ -52,6 +54,6 @@ needs and allergies. GitHub Pages runs deterministic companion logic in the brow
 The separate local Python edition also runs the Qwen trainer persona on the user's
 machine; the public site does not download or run that model.
 
-The current release was checked with 162 Python tests, 75 cross-runtime meal scenarios,
+The current release was checked with 163 Python tests, 75 cross-runtime meal scenarios,
 currency boundaries, desktop/mobile browser interactions, and a real local-model
 Streamlit submission.

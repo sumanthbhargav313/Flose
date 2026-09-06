@@ -571,6 +571,7 @@ form.addEventListener("submit", (event) => {
       : estimateWorkoutMinutes(Number(form.elements.sleep.value), Number(form.elements.scheduled.value), Number(form.elements.stress.value)),
     commitments: form.elements.commitments.value.split("\n").map((item) => item.trim()).filter(Boolean),
   };
+  const priorPatterns = summarize(activeRecord);
   let meals;
   try {
     meals = window.FloseFood.planFood({
@@ -581,6 +582,7 @@ form.addEventListener("submit", (event) => {
       stress: checkIn.stress, mood: {Normal: 6, Bad: 2, Good: 8}[checkIn.mood],
       available_minutes: checkIn.available, scheduled_hours: mode === "estimate" ? Number(form.elements.scheduled.value) : null,
       commitments: checkIn.commitments,
+      previous_meals: priorPatterns?.latest.recommendation.meals || [],
     });
   } catch (error) {
     result.hidden = true;
@@ -591,7 +593,6 @@ form.addEventListener("submit", (event) => {
     return;
   }
   const fitness = buildFitness(checkIn);
-  const priorPatterns = summarize(activeRecord);
   const recovery = checkIn.sleep < 7 || checkIn.stress >= 7;
   let note = recovery
     ? "Today is recovery-aware: protect breaks, nourishing meals, and an earlier wind-down."
