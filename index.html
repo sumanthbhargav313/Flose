@@ -67,19 +67,43 @@
 
     <section id="planner-screen" class="screen" aria-labelledby="planner-title" hidden>
       <section class="planner-hero">
-        <span class="step-pill">Your check-in · About 2 minutes</span>
-        <h1 id="planner-title">Help Momo understand your day.</h1>
-        <p>A few honest preferences help your Flose circle build movement, meals, and recovery around the day you actually have.</p>
+        <span id="planner-step" class="step-pill">Your private Momo profile</span>
+        <h1 id="planner-title">What should Momo call you?</h1>
+        <p id="planner-copy">Your name is your unique profile key in this browser. Return with the same name and Momo will remember what matters.</p>
       </section>
 
-      <form id="preference-form">
-        <fieldset>
-          <legend>First, a little about you</legend>
-          <p class="form-note">Momo plans for one adult. Budgets are in Indian rupees (₹).</p>
+      <form id="identity-form" class="identity-panel">
+        <label>Your name<input id="identity-name" name="identityName" maxlength="60" autocomplete="given-name" placeholder="Enter the name you want Momo to remember" required></label>
+        <p class="form-note">Names are case-insensitively unique in this browser. Your profile and history stay in this browser and are not uploaded.</p>
+        <button class="primary-button" type="submit">Continue with Momo →</button>
+      </form>
+
+      <section id="profile-welcome" hidden>
+        <div class="profile-card">
+          <div id="profile-avatar" class="profile-avatar" aria-hidden="true"></div>
+          <div><strong id="profile-name"></strong><small id="profile-id"></small></div>
+        </div>
+        <div class="profile-actions">
+          <button id="edit-profile" class="nav-button" type="button">Edit saved preferences</button>
+          <button id="change-profile" class="nav-button" type="button">Use another name</button>
+        </div>
+        <div id="pattern-grid" class="pattern-grid" hidden></div>
+        <details id="history-details" class="food-details" hidden>
+          <summary>Earlier recommendation and pattern</summary>
+          <p id="pattern-summary"></p>
+          <p id="last-recommendation"></p>
+        </details>
+      </section>
+
+      <form id="preference-form" hidden>
+        <input id="user-name" name="userName" type="hidden">
+        <fieldset class="onboarding-only">
+          <legend>Your saved essentials</legend>
+          <p class="form-note">Momo asks for these once and reuses them on later check-ins. Budgets are in Indian rupees (₹).</p>
           <div class="form-grid three">
-            <label>Your name<input id="user-name" name="userName" maxlength="60" autocomplete="given-name" required></label>
             <label>Age (years)<input id="age" name="age" type="number" min="18" max="120" step="1" value="25" required></label>
             <label>Location<input id="location" name="location" maxlength="80" placeholder="Locality, city — e.g. Whitefield, Bengaluru" required></label>
+            <label>Diet<select id="diet" name="diet"><option value="veg">Veg</option><option value="non-veg">Non-veg</option><option value="jain">Jain</option><option value="flexible">Flexible</option></select></label>
           </div>
           <div class="form-grid two">
             <label>Height (cm)<input id="height" name="height" type="number" min="100" max="250" step="0.5" value="170" required></label>
@@ -92,25 +116,19 @@
           <p class="form-note">Enter spending before this plan. Balances are projections; creating another plan does not record a purchase. Update spending from your receipts each visit.</p>
         </fieldset>
         <fieldset>
-          <legend>Your current state</legend>
-          <p class="form-note">These signals help Momo balance effort and recovery.</p>
+          <legend>How is today feeling?</legend>
+          <p class="form-note">For returning profiles, these are the only details Momo asks again.</p>
           <div class="form-grid three">
             <label>Sleep last night (hours)<input id="sleep" name="sleep" type="number" min="0" max="12" step="0.5" value="7" required></label>
             <label>Stress level (1–10)<input id="stress" name="stress" type="number" min="1" max="10" step="1" value="5" required></label>
             <label>Mood<select id="mood" name="mood"><option>Normal</option><option>Bad</option><option>Good</option></select></label>
           </div>
+          <label>Today’s commitments (one per line)<textarea id="commitments" name="commitments" rows="4" placeholder="Team call at 10&#10;School pickup at 4&#10;Dinner with family"></textarea></label>
         </fieldset>
 
-        <fieldset>
-          <legend>What fits your life?</legend>
+        <fieldset class="onboarding-only">
+          <legend>Food and time defaults</legend>
           <p class="form-note">Meals start with your diet, regional food context, budget and time.</p>
-          <div class="choice-group" role="radiogroup" aria-labelledby="diet-label">
-            <span id="diet-label" class="choice-label">Diet</span>
-            <label><input type="radio" name="diet" value="veg" checked> Veg</label>
-            <label><input type="radio" name="diet" value="non-veg"> Non-veg</label>
-            <label><input type="radio" name="diet" value="jain"> Jain</label>
-            <label><input type="radio" name="diet" value="flexible"> Flexible</label>
-          </div>
           <label>Any cravings? (optional)<input id="cravings" name="cravings" maxlength="200" placeholder="Sweet, savoury, pizza, egg roll…"></label>
           <div class="choice-group" role="radiogroup" aria-labelledby="food-mode-label">
             <span id="food-mode-label" class="choice-label">Where will your meals come from?</span>
@@ -121,8 +139,8 @@
           <p class="form-note">Home costs cover ingredient portions for one adult, not full packet purchases. Outside prices are estimates; check nearby menus and fees before ordering.</p>
         </fieldset>
 
-        <fieldset>
-          <legend>Movement and schedule</legend>
+        <fieldset class="onboarding-only">
+          <legend>Movement defaults</legend>
           <p class="form-note">Choose your workout time or let Momo estimate it from today’s available space.</p>
           <div class="form-grid two">
             <label>Preferred movement<select id="activity" name="activity"><option>Gym</option><option>Walk</option><option>Yoga</option><option>Swim</option></select></label>
@@ -138,9 +156,8 @@
             <label>Hours already scheduled today<input id="scheduled" name="scheduled" type="number" min="0" max="16" step="0.5" value="8"></label>
             <p id="estimate-copy" class="estimate" aria-live="polite"></p>
           </div>
-          <label>Today’s commitments (one per line)<textarea id="commitments" name="commitments" rows="4" placeholder="Team call at 10&#10;School pickup at 4&#10;Dinner with family"></textarea></label>
         </fieldset>
-        <button class="primary-button" type="submit">Create my Flose plan →</button>
+        <button id="plan-submit" class="primary-button" type="submit">Save profile &amp; create my first plan →</button>
       </form>
 
       <section id="plan-result" class="result" aria-live="polite" tabindex="-1" hidden>

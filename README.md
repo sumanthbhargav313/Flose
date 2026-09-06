@@ -3,8 +3,21 @@
 # Flose
 
 A friend who stays close. Momo coordinates your daily rhythm, movement, and meals.
-Select **Build my day** to create a plan in your browser. Check-ins are not uploaded
-or saved between visits.
+Select **Build my day** to create a plan in your browser. Check-ins are never uploaded;
+profiles and up to 90 recommendations per name are remembered in that browser only.
+
+## Remembered profiles — September 6, 2026
+
+- Enter a name first. New names complete the full setup once; returning names see only
+  sleep, stress, mood, and today's commitments unless they choose to edit saved preferences.
+- Names are case-insensitively unique in this browser and receive a stable Momo profile
+  placeholder. Duplicate registration cannot overwrite the existing browser profile.
+- Returning profiles show check-in count, average sleep/stress, frequent movement, and
+  the latest recommendation. Profile history stays in browser `localStorage` and is
+  capped at 90 events.
+- A name is a local convenience identifier, not authentication. On a shared browser,
+  someone who knows the name can open that profile; there is no global or cross-device
+  uniqueness in this static edition.
 
 ## Planner personalization — September 5, 2026
 
@@ -36,6 +49,6 @@ needs and allergies. GitHub Pages runs deterministic companion logic in the brow
 The separate local Python edition also runs the Qwen trainer persona on the user's
 machine; the public site does not download or run that model.
 
-The release was checked with 137 Python tests, 75 cross-runtime meal scenarios,
+The current release was checked with 147 Python tests, 75 cross-runtime meal scenarios,
 currency boundaries, desktop/mobile browser interactions, and a real local-model
 Streamlit submission.

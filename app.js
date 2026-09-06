@@ -5,10 +5,145 @@ const screens = {
   planner: document.querySelector("#planner-screen"),
 };
 const form = document.querySelector("#preference-form");
+const identityForm = document.querySelector("#identity-form");
+const profileWelcome = document.querySelector("#profile-welcome");
 const result = document.querySelector("#plan-result");
 const manualTime = document.querySelector("#manual-time");
 const estimatedTime = document.querySelector("#estimated-time");
 const estimateCopy = document.querySelector("#estimate-copy");
+const STORAGE_KEY = "flose.momo.profiles.v1";
+const MAX_HISTORY = 90;
+let activeKey = null;
+let activeRecord = null;
+let editingProfile = false;
+
+function normalizeName(name) {
+  const display = name.normalize("NFKC").trim().replace(/\s+/g, " ");
+  if (!display || display.length > 60) throw new Error("Enter a name of 1–60 characters.");
+  return { display, key: display.toLocaleLowerCase("en-IN") };
+}
+
+function profilePlaceholder(name) {
+  const {display, key} = normalizeName(name);
+  const initials = display.split(" ").slice(0, 2).map(part => part[0]).join("").toUpperCase() || "MO";
+  let hash = 2166136261;
+  for (const character of key) {
+    hash ^= character.codePointAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `MO-${initials}-${(hash >>> 0).toString(16).padStart(8, "0").toUpperCase()}`;
+}
+
+function loadProfiles() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function saveProfiles(profiles) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
+}
+
+function setRadio(name, value) {
+  const input = [...form.elements[name]].find(item => item.value === value);
+  if (input) input.checked = true;
+}
+
+function applyRecord(record) {
+  const values = record.values;
+  form.elements.userName.value = record.displayName;
+  form.elements.age.value = values.age;
+  form.elements.location.value = values.location;
+  form.elements.height.value = values.height;
+  form.elements.weight.value = values.weight;
+  form.elements.foodBudget.value = values.foodBudget;
+  form.elements.groceryBudget.value = values.groceryBudget;
+  form.elements.outsideSpent.value = values.outsideSpent;
+  form.elements.grocerySpent.value = values.grocerySpent;
+  form.elements.diet.value = values.diet;
+  form.elements.activity.value = values.activity;
+  form.elements.activeDays.value = values.activeDays;
+  form.elements.cravings.value = values.cravings || "";
+  form.elements.cooking.value = values.cooking;
+  form.elements.available.value = values.available;
+  form.elements.scheduled.value = values.scheduled ?? 8;
+  setRadio("foodMode", values.foodMode);
+  setRadio("timeMode", values.timeMode);
+  const latest = record.history?.at(-1)?.checkIn;
+  form.elements.sleep.value = latest?.sleep ?? 7;
+  form.elements.stress.value = latest?.stress ?? 5;
+  form.elements.mood.value = latest?.mood ?? "Normal";
+  form.elements.commitments.value = "";
+  updateTimeMode();
+}
+
+function summarize(record) {
+  const history = record.history || [];
+  if (!history.length) return null;
+  const average = key => history.reduce((total, event) => total + Number(event.checkIn[key]), 0) / history.length;
+  const counts = {};
+  history.forEach(event => {
+    const activity = event.recommendation.fitness.activity;
+    counts[activity] = (counts[activity] || 0) + 1;
+  });
+  const commonActivity = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+  return {
+    count: history.length,
+    averageSleep: average("sleep"),
+    averageStress: average("stress"),
+    averageMood: history.reduce((total, event) => total + ({Bad: 2, Normal: 6, Good: 8}[event.checkIn.mood]), 0) / history.length,
+    commonActivity,
+    latest: history.at(-1),
+  };
+}
+
+function renderProfile(record) {
+  document.querySelector("#profile-avatar").textContent = record.displayName.split(" ").slice(0, 2).map(part => part[0]).join("").toUpperCase();
+  document.querySelector("#profile-name").textContent = record.displayName;
+  document.querySelector("#profile-id").textContent = `${record.saved ? "Saved local profile" : "Unique profile reserved when you create your first plan"} · ${record.profileId}`;
+  const patterns = summarize(record);
+  const grid = document.querySelector("#pattern-grid");
+  const details = document.querySelector("#history-details");
+  grid.replaceChildren();
+  if (patterns) {
+    [["Check-ins remembered", patterns.count], ["Average sleep", `${patterns.averageSleep.toFixed(1)} h`],
+      ["Average stress", `${patterns.averageStress.toFixed(1)} / 10`], ["Frequent plan", patterns.commonActivity]].forEach(([label, value]) => {
+      const card = node(grid, "div", "", "pattern-card");
+      node(card, "small", label);
+      node(card, "strong", String(value));
+    });
+    grid.hidden = false;
+    details.hidden = false;
+    document.querySelector("#pattern-summary").textContent = `Across ${patterns.count} check-in${patterns.count === 1 ? "" : "s"}: average sleep ${patterns.averageSleep.toFixed(1)}h, stress ${patterns.averageStress.toFixed(1)}/10, mood ${patterns.averageMood.toFixed(1)}/10; most frequent movement plan: ${patterns.commonActivity}.`;
+    const fitness = patterns.latest.recommendation.fitness;
+    document.querySelector("#last-recommendation").textContent = `Last movement plan: ${fitness.duration} minutes of ${fitness.activity} (${fitness.intensity}). Last meals: ${patterns.latest.recommendation.meals.join("; ")}`;
+  } else {
+    grid.hidden = true;
+    details.hidden = true;
+  }
+}
+
+function showProfileForm(record, returning) {
+  activeRecord = record;
+  identityForm.hidden = true;
+  profileWelcome.hidden = false;
+  form.hidden = false;
+  renderProfile(record);
+  document.querySelectorAll(".onboarding-only").forEach(fieldset => fieldset.hidden = returning);
+  document.querySelector("#edit-profile").hidden = !record.saved || !returning;
+  document.querySelector("#plan-submit").textContent = returning
+    ? "Create today’s Flose plan →"
+    : record.saved ? "Update preferences & create my plan →" : "Save profile & create my first plan →";
+  document.querySelector("#planner-step").textContent = `${record.saved ? "Welcome back" : "First-time setup"} · ${returning ? "Daily check-in" : "About 2 minutes"}`;
+  document.querySelector("#planner-title").textContent = `${record.saved ? "Good to see you again" : "Let Momo get to know you"}, ${record.displayName}.`;
+  document.querySelector("#planner-copy").textContent = returning
+    ? "Only today’s signals are needed. Momo has already filled your saved preferences."
+    : "Share your essentials once. Momo will remember them for shorter check-ins next time.";
+  applyRecord(record);
+}
 
 function showScreen(name) {
   Object.entries(screens).forEach(([screenName, element]) => {
@@ -197,9 +332,75 @@ function renderPanel(id, title, paragraphs, items = []) {
   if (items.length) appendList(panel, items);
 }
 
+identityForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (!identityForm.reportValidity()) return;
+  let identity;
+  try {
+    identity = normalizeName(identityForm.elements.identityName.value);
+  } catch (error) {
+    identityForm.elements.identityName.setCustomValidity(error.message);
+    identityForm.reportValidity();
+    return;
+  }
+  identityForm.elements.identityName.setCustomValidity("");
+  activeKey = identity.key;
+  const saved = loadProfiles()[activeKey];
+  editingProfile = false;
+  if (saved) {
+    showProfileForm(saved, true);
+  } else {
+    showProfileForm({
+      displayName: identity.display,
+      profileId: profilePlaceholder(identity.display),
+      saved: false,
+      values: {
+        age: 25, location: "", height: 170, weight: 70, foodBudget: 400,
+        groceryBudget: 6000, outsideSpent: 0, grocerySpent: 0, diet: "veg",
+        activity: "Gym", activeDays: 0, cravings: "", foodMode: "home",
+        cooking: 90, timeMode: "manual", available: 30, scheduled: 8,
+      },
+      history: [],
+    }, false);
+  }
+});
+
+identityForm.elements.identityName.addEventListener("input", () => {
+  identityForm.elements.identityName.setCustomValidity("");
+});
+
+document.querySelector("#change-profile").addEventListener("click", () => {
+  activeKey = null;
+  activeRecord = null;
+  editingProfile = false;
+  identityForm.reset();
+  identityForm.hidden = false;
+  profileWelcome.hidden = true;
+  form.hidden = true;
+  result.hidden = true;
+  document.querySelector("#planner-step").textContent = "Your private Momo profile";
+  document.querySelector("#planner-title").textContent = "What should Momo call you?";
+  document.querySelector("#planner-copy").textContent = "Your name is your unique profile key in this browser. Return with the same name and Momo will remember what matters.";
+  identityForm.elements.identityName.focus();
+});
+
+document.querySelector("#edit-profile").addEventListener("click", () => {
+  editingProfile = true;
+  showProfileForm(activeRecord, false);
+});
+
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   if (!form.reportValidity()) return;
+  const profiles = loadProfiles();
+  if (!activeRecord.saved && profiles[activeKey]) {
+    result.hidden = true;
+    document.querySelector("#form-error")?.remove();
+    const message = node(form, "p", "That name already belongs to a Momo profile in this browser. Return with the saved name or choose another name.", "budget-warning");
+    message.id = "form-error";
+    message.setAttribute("role", "alert");
+    return;
+  }
   const mode = form.elements.timeMode.value;
   const checkIn = {
     profile: {
@@ -239,10 +440,14 @@ form.addEventListener("submit", (event) => {
     return;
   }
   const fitness = buildFitness(checkIn);
+  const priorPatterns = summarize(activeRecord);
   const recovery = checkIn.sleep < 7 || checkIn.stress >= 7;
-  const note = recovery
+  let note = recovery
     ? "Today is recovery-aware: protect breaks, nourishing meals, and an earlier wind-down."
     : "You have room for a focused, balanced day—keep meals and breaks protected.";
+  if (priorPatterns) {
+    note += ` Momo also considered your local pattern: across ${priorPatterns.count} check-in${priorPatterns.count === 1 ? "" : "s"}, average sleep was ${priorPatterns.averageSleep.toFixed(1)}h and stress was ${priorPatterns.averageStress.toFixed(1)}/10.`;
+  }
   const schedule = [
     "Morning: water, breakfast, and a quick priorities check.",
     fitness.duration === 0 ? "Movement: no workout scheduled today." : `Movement: ${fitness.duration} min of ${fitness.activity} (${fitness.intensity}).`,
@@ -251,6 +456,68 @@ form.addEventListener("submit", (event) => {
     ...checkIn.commitments.map((item) => `Commitment: ${item}`),
     "Evening: prepare tomorrow’s essentials and begin wind-down before bedtime.",
   ];
+
+  const record = {
+    displayName: checkIn.profile.name,
+    profileId: activeRecord.profileId,
+    saved: true,
+    values: {
+      age: checkIn.profile.age,
+      location: checkIn.location,
+      height: checkIn.profile.height_cm,
+      weight: checkIn.profile.weight_kg,
+      foodBudget: checkIn.profile.daily_food_budget,
+      groceryBudget: checkIn.profile.monthly_grocery_budget,
+      outsideSpent: Number(form.elements.outsideSpent.value),
+      grocerySpent: Number(form.elements.grocerySpent.value),
+      diet: checkIn.diet,
+      activity: checkIn.activity,
+      activeDays: checkIn.activeDays,
+      cravings: form.elements.cravings.value.trim(),
+      foodMode: form.elements.foodMode.value,
+      cooking: Number(form.elements.cooking.value),
+      timeMode: mode,
+      available: checkIn.available,
+      scheduled: mode === "estimate" ? Number(form.elements.scheduled.value) : null,
+    },
+    history: [...(activeRecord.history || []), {
+      createdAt: new Date().toISOString(),
+      checkIn: {
+        sleep: checkIn.sleep, stress: checkIn.stress, mood: checkIn.mood,
+        commitments: checkIn.commitments, available: checkIn.available,
+        activeDays: checkIn.activeDays, cravings: form.elements.cravings.value.trim(),
+        foodMode: form.elements.foodMode.value, cooking: Number(form.elements.cooking.value),
+        grocerySpent: Number(form.elements.grocerySpent.value),
+        outsideSpent: Number(form.elements.outsideSpent.value),
+      },
+      recommendation: {
+        wellbeingNote: note,
+        fitness,
+        meals: meals.meals.map(item => `${item.slot}: ${item.name}`),
+        groceryRestock: meals.ingredients?.map(item => item.name) || [],
+        foodBudget: {
+          mode: meals.mode, budget_paise: meals.budget_paise,
+          spent_paise: meals.spent_paise, total_paise: meals.total_paise,
+          remaining_paise: meals.remaining_paise, fits: meals.fits,
+        },
+        schedule,
+      },
+    }].slice(-MAX_HISTORY),
+  };
+  try {
+    profiles[activeKey] = record;
+    saveProfiles(profiles);
+  } catch (_) {
+    result.hidden = true;
+    document.querySelector("#form-error")?.remove();
+    const message = node(form, "p", "Momo could not save this profile in browser storage. Check private-browsing or storage settings and try again.", "budget-warning");
+    message.id = "form-error";
+    message.setAttribute("role", "alert");
+    return;
+  }
+  activeRecord = record;
+  editingProfile = false;
+  showProfileForm(record, true);
 
   document.querySelector("#profile-summary").textContent = `${checkIn.profile.name} · ${checkIn.profile.age} years · ${checkIn.profile.height_cm} cm · ${checkIn.profile.weight_kg} kg · ${checkIn.location}`;
   renderFood(meals);
