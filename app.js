@@ -11,10 +11,15 @@ const result = document.querySelector("#plan-result");
 const manualTime = document.querySelector("#manual-time");
 const estimatedTime = document.querySelector("#estimated-time");
 const estimateCopy = document.querySelector("#estimate-copy");
-const STORAGE_KEY = "flose.momo.profiles.v1";
+const STORAGE_KEY = "flose.momo.profiles.v2";
+const LEGACY_STORAGE_KEY = "flose.momo.profiles.v1";
+const UI_SESSION_KEY = "flose.momo.ui.v2";
 const MAX_HISTORY = 90;
+const CODE_ITERATIONS = 120000;
 let activeKey = null;
 let activeRecord = null;
+let activeCredential = null;
+let anonymousMode = false;
 let editingProfile = false;
 
 function normalizeName(name) {
@@ -23,15 +28,53 @@ function normalizeName(name) {
   return { display, key: display.toLocaleLowerCase("en-IN") };
 }
 
-function profilePlaceholder(name) {
-  const {display, key} = normalizeName(name);
-  const initials = display.split(" ").slice(0, 2).map(part => part[0]).join("").toUpperCase() || "MO";
-  let hash = 2166136261;
-  for (const character of key) {
-    hash ^= character.codePointAt(0);
-    hash = Math.imul(hash, 16777619);
+function validateAccessCode(code) {
+  if (typeof code !== "string" || [...code].length !== 4 || /^\s{4}$/u.test(code) || /[\u0000-\u001f\u007f]/u.test(code)) {
+    throw new Error("Your access code must be exactly 4 printable characters and may include letters, numbers, or special characters.");
   }
-  return `MO-${initials}-${(hash >>> 0).toString(16).padStart(8, "0").toUpperCase()}`;
+  return code;
+}
+
+function bytesToBase64(bytes) {
+  return btoa(String.fromCharCode(...bytes));
+}
+
+function base64ToBytes(value) {
+  return Uint8Array.from(atob(value), character => character.charCodeAt(0));
+}
+
+async function deriveCodeHash(code, salt) {
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(validateAccessCode(code)), "PBKDF2", false, ["deriveBits"],
+  );
+  const bits = await crypto.subtle.deriveBits(
+    {name: "PBKDF2", hash: "SHA-256", salt, iterations: CODE_ITERATIONS}, key, 256,
+  );
+  return bytesToBase64(new Uint8Array(bits));
+}
+
+async function credentialFor(code, salt = crypto.getRandomValues(new Uint8Array(16))) {
+  return {salt: bytesToBase64(salt), codeHash: await deriveCodeHash(code, salt)};
+}
+
+function randomProfileKey() {
+  return [...crypto.getRandomValues(new Uint8Array(16))]
+    .map(byte => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function findAuthenticatedProfile(profiles, nameKey, code) {
+  for (const [key, record] of Object.entries(profiles)) {
+    if (!record.credential || normalizeName(record.displayName).key !== nameKey) continue;
+    const candidate = await deriveCodeHash(code, base64ToBytes(record.credential.salt));
+    if (candidate === record.credential.codeHash) return {key, record};
+  }
+  return null;
+}
+
+function profilePlaceholder(name, uniqueKey) {
+  const {display} = normalizeName(name);
+  const initials = display.split(" ").slice(0, 2).map(part => part[0]).join("").toUpperCase() || "MO";
+  return `MO-${initials}-${uniqueKey.slice(0, 10).toUpperCase()}`;
 }
 
 function loadProfiles() {
@@ -45,6 +88,28 @@ function loadProfiles() {
 
 function saveProfiles(profiles) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
+}
+
+function loadLegacyProfile(nameKey) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY) || "{}");
+    return parsed && typeof parsed === "object" ? parsed[nameKey] || null : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function saveUiSession(value) {
+  if (value) sessionStorage.setItem(UI_SESSION_KEY, JSON.stringify(value));
+  else sessionStorage.removeItem(UI_SESSION_KEY);
+}
+
+function loadUiSession() {
+  try {
+    return JSON.parse(sessionStorage.getItem(UI_SESSION_KEY) || "null");
+  } catch (_) {
+    return null;
+  }
 }
 
 function setRadio(name, value) {
@@ -103,7 +168,10 @@ function summarize(record) {
 function renderProfile(record) {
   document.querySelector("#profile-avatar").textContent = record.displayName.split(" ").slice(0, 2).map(part => part[0]).join("").toUpperCase();
   document.querySelector("#profile-name").textContent = record.displayName;
-  document.querySelector("#profile-id").textContent = `${record.saved ? "Saved local profile" : "Unique profile reserved when you create your first plan"} · ${record.profileId}`;
+  const profileCaption = record.anonymous
+    ? "Session-only tryout · nothing will be saved"
+    : record.saved ? "Saved local profile" : "Private profile reserved when you create your first plan";
+  document.querySelector("#profile-id").textContent = `${profileCaption} · ${record.profileId}`;
   const patterns = summarize(record);
   const grid = document.querySelector("#pattern-grid");
   const details = document.querySelector("#history-details");
@@ -133,16 +201,28 @@ function showProfileForm(record, returning) {
   form.hidden = false;
   renderProfile(record);
   document.querySelectorAll(".onboarding-only").forEach(fieldset => fieldset.hidden = returning);
-  document.querySelector("#edit-profile").hidden = !record.saved || !returning;
+  document.querySelector("#edit-profile").hidden = record.anonymous || !record.saved || !returning;
+  document.querySelector("#change-profile").textContent = record.anonymous
+    ? "Use a profile instead"
+    : "Sign out / use another profile";
   document.querySelector("#plan-submit").textContent = returning
     ? "Create today’s Flose plan →"
-    : record.saved ? "Update preferences & create my plan →" : "Save profile & create my first plan →";
-  document.querySelector("#planner-step").textContent = `${record.saved ? "Welcome back" : "First-time setup"} · ${returning ? "Daily check-in" : "About 2 minutes"}`;
-  document.querySelector("#planner-title").textContent = `${record.saved ? "Good to see you again" : "Let Momo get to know you"}, ${record.displayName}.`;
+    : record.anonymous ? "Create anonymous plan →"
+      : record.saved ? "Update preferences & create my plan →" : "Save profile & create my first plan →";
+  const step = record.anonymous ? "Anonymous tryout" : record.saved ? "Welcome back" : "First-time setup";
+  const greeting = record.anonymous ? "Try a day with Momo" : record.saved ? "Good to see you again" : "Let Momo get to know you";
+  document.querySelector("#planner-step").textContent = `${step} · ${returning ? "Daily check-in" : "About 2 minutes"}`;
+  document.querySelector("#planner-title").textContent = `${greeting}, ${record.displayName}.`;
   document.querySelector("#planner-copy").textContent = returning
     ? "Only today’s signals are needed. Momo has already filled your saved preferences."
-    : "Share your essentials once. Momo will remember them for shorter check-ins next time.";
+    : record.anonymous
+      ? "Nothing from this tryout will be added to a profile or recommendation history."
+      : "Share your essentials once. Momo will remember them for shorter check-ins next time.";
   applyRecord(record);
+  saveUiSession(record.anonymous
+    ? {mode: "anonymous", record}
+    : record.saved ? {mode: "profile", activeKey}
+      : {mode: "create", activeKey, record, credential: activeCredential});
 }
 
 function showScreen(name) {
@@ -332,47 +412,117 @@ function renderPanel(id, title, paragraphs, items = []) {
   if (items.length) appendList(panel, items);
 }
 
-identityForm.addEventListener("submit", (event) => {
+function blankRecord(displayName, profileId, anonymous = false) {
+  return {
+    displayName, profileId, anonymous, saved: false,
+    values: {
+      age: 25, location: "", height: 170, weight: 70, foodBudget: 400,
+      groceryBudget: 6000, outsideSpent: 0, grocerySpent: 0, diet: "veg",
+      activity: "Gym", activeDays: 0, cravings: "", foodMode: "home",
+      cooking: 90, timeMode: "manual", available: 30, scheduled: 8,
+    },
+    history: [],
+  };
+}
+
+function setIdentityError(message = "") {
+  const error = document.querySelector("#identity-error");
+  error.textContent = message;
+  error.hidden = !message;
+}
+
+function updateIdentityMode() {
+  const creating = identityForm.elements.identityMode.value === "create";
+  document.querySelector("#create-code-fields").hidden = !creating;
+  identityForm.elements.identityCodeConfirm.required = creating;
+  identityForm.elements.identityCode.autocomplete = creating ? "new-password" : "current-password";
+  document.querySelector("#identity-submit").textContent = creating ? "Create my profile →" : "Open my profile →";
+  setIdentityError();
+}
+
+identityForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!identityForm.reportValidity()) return;
   let identity;
+  let code;
   try {
     identity = normalizeName(identityForm.elements.identityName.value);
+    code = validateAccessCode(identityForm.elements.identityCode.value);
   } catch (error) {
-    identityForm.elements.identityName.setCustomValidity(error.message);
-    identityForm.reportValidity();
+    setIdentityError(error.message);
     return;
   }
-  identityForm.elements.identityName.setCustomValidity("");
-  activeKey = identity.key;
-  const saved = loadProfiles()[activeKey];
+  const creating = identityForm.elements.identityMode.value === "create";
+  if (creating && code !== identityForm.elements.identityCodeConfirm.value) {
+    setIdentityError("The two access codes do not match. Re-enter both before continuing.");
+    return;
+  }
+  const profiles = loadProfiles();
+  const match = await findAuthenticatedProfile(profiles, identity.key, code);
+  const saved = match?.record;
+  setIdentityError();
   editingProfile = false;
-  if (saved) {
+  anonymousMode = false;
+  if (!creating) {
+    if (!saved) {
+      const legacy = loadLegacyProfile(identity.key);
+      setIdentityError(legacy
+        ? "This profile predates access codes. Choose Create a profile to secure and reopen it with your first code."
+        : "Name or access code is incorrect. Check both and try again.");
+      return;
+    }
+    activeKey = match.key;
+    activeCredential = null;
     showProfileForm(saved, true);
   } else {
-    showProfileForm({
-      displayName: identity.display,
-      profileId: profilePlaceholder(identity.display),
-      saved: false,
-      values: {
-        age: 25, location: "", height: 170, weight: 70, foodBudget: 400,
-        groceryBudget: 6000, outsideSpent: 0, grocerySpent: 0, diet: "veg",
-        activity: "Gym", activeDays: 0, cravings: "", foodMode: "home",
-        cooking: 90, timeMode: "manual", available: 30, scheduled: 8,
-      },
-      history: [],
-    }, false);
+    if (saved) {
+      setIdentityError("That name and code already identify a profile. Choose Sign in instead.");
+      return;
+    }
+    activeKey = randomProfileKey();
+    activeCredential = await credentialFor(code);
+    const legacy = loadLegacyProfile(identity.key);
+    if (legacy) {
+      const claimed = {
+        ...legacy,
+        displayName: identity.display,
+        profileId: profilePlaceholder(identity.display, activeKey),
+        credential: activeCredential,
+        saved: true,
+      };
+      profiles[activeKey] = claimed;
+      saveProfiles(profiles);
+      activeCredential = null;
+      showProfileForm(claimed, true);
+    } else {
+      showProfileForm(
+        blankRecord(identity.display, profilePlaceholder(identity.display, activeKey)),
+        false,
+      );
+    }
   }
+  identityForm.elements.identityCode.value = "";
+  identityForm.elements.identityCodeConfirm.value = "";
 });
 
-identityForm.elements.identityName.addEventListener("input", () => {
-  identityForm.elements.identityName.setCustomValidity("");
+identityForm.addEventListener("input", () => setIdentityError());
+identityForm.addEventListener("change", updateIdentityMode);
+
+document.querySelector("#anonymous-tryout").addEventListener("click", () => {
+  activeKey = null;
+  activeCredential = null;
+  anonymousMode = true;
+  editingProfile = false;
+  showProfileForm(blankRecord("Guest", "ANONYMOUS", true), false);
 });
 
 document.querySelector("#change-profile").addEventListener("click", () => {
   activeKey = null;
   activeRecord = null;
+  activeCredential = null;
+  anonymousMode = false;
   editingProfile = false;
+  saveUiSession(null);
   identityForm.reset();
   identityForm.hidden = false;
   profileWelcome.hidden = true;
@@ -380,7 +530,8 @@ document.querySelector("#change-profile").addEventListener("click", () => {
   result.hidden = true;
   document.querySelector("#planner-step").textContent = "Your private Momo profile";
   document.querySelector("#planner-title").textContent = "What should Momo call you?";
-  document.querySelector("#planner-copy").textContent = "Your name is your unique profile key in this browser. Return with the same name and Momo will remember what matters.";
+  document.querySelector("#planner-copy").textContent = "Your name and private 4-character code work together as your local sign-in, so people who share a name keep separate plans.";
+  updateIdentityMode();
   identityForm.elements.identityName.focus();
 });
 
@@ -393,10 +544,10 @@ form.addEventListener("submit", (event) => {
   event.preventDefault();
   if (!form.reportValidity()) return;
   const profiles = loadProfiles();
-  if (!activeRecord.saved && profiles[activeKey]) {
+  if (!anonymousMode && !activeRecord.saved && profiles[activeKey]) {
     result.hidden = true;
     document.querySelector("#form-error")?.remove();
-    const message = node(form, "p", "That name already belongs to a Momo profile in this browser. Return with the saved name or choose another name.", "budget-warning");
+    const message = node(form, "p", "That name and access code already identify a Momo profile in this browser. Sign in or choose a different code.", "budget-warning");
     message.id = "form-error";
     message.setAttribute("role", "alert");
     return;
@@ -460,7 +611,9 @@ form.addEventListener("submit", (event) => {
   const record = {
     displayName: checkIn.profile.name,
     profileId: activeRecord.profileId,
-    saved: true,
+    anonymous: anonymousMode,
+    saved: !anonymousMode,
+    credential: anonymousMode ? undefined : (activeRecord.credential || activeCredential),
     values: {
       age: checkIn.profile.age,
       location: checkIn.location,
@@ -480,7 +633,7 @@ form.addEventListener("submit", (event) => {
       available: checkIn.available,
       scheduled: mode === "estimate" ? Number(form.elements.scheduled.value) : null,
     },
-    history: [...(activeRecord.history || []), {
+    history: anonymousMode ? [] : [...(activeRecord.history || []), {
       createdAt: new Date().toISOString(),
       checkIn: {
         sleep: checkIn.sleep, stress: checkIn.stress, mood: checkIn.mood,
@@ -505,8 +658,10 @@ form.addEventListener("submit", (event) => {
     }].slice(-MAX_HISTORY),
   };
   try {
-    profiles[activeKey] = record;
-    saveProfiles(profiles);
+    if (!anonymousMode) {
+      profiles[activeKey] = record;
+      saveProfiles(profiles);
+    }
   } catch (_) {
     result.hidden = true;
     document.querySelector("#form-error")?.remove();
@@ -516,8 +671,9 @@ form.addEventListener("submit", (event) => {
     return;
   }
   activeRecord = record;
+  activeCredential = null;
   editingProfile = false;
-  showProfileForm(record, true);
+  showProfileForm(record, !anonymousMode);
 
   document.querySelector("#profile-summary").textContent = `${checkIn.profile.name} · ${checkIn.profile.age} years · ${checkIn.profile.height_cm} cm · ${checkIn.profile.weight_kg} kg · ${checkIn.location}`;
   renderFood(meals);
@@ -530,4 +686,27 @@ form.addEventListener("submit", (event) => {
 });
 
 updateTimeMode();
-showScreen(location.hash === "#planner" ? "planner" : "home");
+updateIdentityMode();
+const initialScreen = location.hash === "#planner" ? "planner" : "home";
+showScreen(initialScreen);
+if (initialScreen === "planner") {
+  const uiSession = loadUiSession();
+  if (uiSession?.mode === "profile" && uiSession.activeKey) {
+    const restored = loadProfiles()[uiSession.activeKey];
+    if (restored) {
+      activeKey = uiSession.activeKey;
+      anonymousMode = false;
+      showProfileForm(restored, true);
+    } else {
+      saveUiSession(null);
+    }
+  } else if (uiSession?.mode === "create" && uiSession.record && uiSession.credential) {
+    activeKey = uiSession.activeKey;
+    activeCredential = uiSession.credential;
+    anonymousMode = false;
+    showProfileForm(uiSession.record, false);
+  } else if (uiSession?.mode === "anonymous" && uiSession.record) {
+    anonymousMode = true;
+    showProfileForm(uiSession.record, false);
+  }
+}

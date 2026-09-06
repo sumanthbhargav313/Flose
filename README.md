@@ -4,20 +4,23 @@
 
 A friend who stays close. Momo coordinates your daily rhythm, movement, and meals.
 Select **Build my day** to create a plan in your browser. Check-ins are never uploaded;
-profiles and up to 90 recommendations per name are remembered in that browser only.
+profiles and up to 90 recommendations per name-and-code pair are remembered in that browser only.
 
 ## Remembered profiles — September 6, 2026
 
-- Enter a name first. New names complete the full setup once; returning names see only
-  sleep, stress, mood, and today's commitments unless they choose to edit saved preferences.
-- Names are case-insensitively unique in this browser and receive a stable Momo profile
-  placeholder. Duplicate registration cannot overwrite the existing browser profile.
+- Enter a name and a private four-character code, or choose an anonymous tryout. New
+  name-and-code pairs complete the full setup once; returning profiles see only sleep,
+  stress, mood, and today's commitments unless they edit saved preferences.
+- The pair is unique in this browser, so people with the same name can use different
+  codes and receive separate stable Momo placeholders, preferences, and histories.
 - Returning profiles show check-in count, average sleep/stress, frequent movement, and
   the latest recommendation. Profile history stays in browser `localStorage` and is
   capped at 90 events.
-- A name is a local convenience identifier, not authentication. On a shared browser,
-  someone who knows the name can open that profile; there is no global or cross-device
-  uniqueness in this static edition.
+- Codes may contain letters, numbers, or special characters and are stored as salted
+  PBKDF2 hashes, never plain text. There is currently no recovery or code-change flow.
+  This remains local convenience protection, not global or cross-device authentication.
+- Anonymous plans are not saved. URL routing and tab-scoped session state keep the user
+  in the same planner step after refresh. Chrome is the default validation browser.
 
 ## Planner personalization — September 5, 2026
 
@@ -49,6 +52,6 @@ needs and allergies. GitHub Pages runs deterministic companion logic in the brow
 The separate local Python edition also runs the Qwen trainer persona on the user's
 machine; the public site does not download or run that model.
 
-The current release was checked with 147 Python tests, 75 cross-runtime meal scenarios,
+The current release was checked with 162 Python tests, 75 cross-runtime meal scenarios,
 currency boundaries, desktop/mobile browser interactions, and a real local-model
 Streamlit submission.

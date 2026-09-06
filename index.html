@@ -69,13 +69,30 @@
       <section class="planner-hero">
         <span id="planner-step" class="step-pill">Your private Momo profile</span>
         <h1 id="planner-title">What should Momo call you?</h1>
-        <p id="planner-copy">Your name is your unique profile key in this browser. Return with the same name and Momo will remember what matters.</p>
+        <p id="planner-copy">Your name and private 4-character code work together as your local sign-in, so people who share a name keep separate plans.</p>
       </section>
 
       <form id="identity-form" class="identity-panel">
-        <label>Your name<input id="identity-name" name="identityName" maxlength="60" autocomplete="given-name" placeholder="Enter the name you want Momo to remember" required></label>
-        <p class="form-note">Names are case-insensitively unique in this browser. Your profile and history stay in this browser and are not uploaded.</p>
-        <button class="primary-button" type="submit">Continue with Momo →</button>
+        <fieldset>
+          <legend>Choose how to continue</legend>
+          <div class="choice-group" role="radiogroup" aria-label="Profile action">
+            <label><input type="radio" name="identityMode" value="signin" checked> Sign in</label>
+            <label><input type="radio" name="identityMode" value="create"> Create a profile</label>
+          </div>
+        </fieldset>
+        <label>Your name<input id="identity-name" name="identityName" maxlength="60" autocomplete="username" placeholder="Enter the name you want Momo to remember" required></label>
+        <label>4-character access code<input id="identity-code" name="identityCode" type="password" minlength="4" maxlength="4" autocomplete="current-password" placeholder="Exactly 4 characters" required></label>
+        <div id="create-code-fields" hidden>
+          <label>Confirm your access code<input id="identity-code-confirm" name="identityCodeConfirm" type="password" minlength="4" maxlength="4" autocomplete="new-password" placeholder="Enter the same code again"></label>
+          <p class="credential-warning" role="note"><strong>Keep this code safe.</strong> Your name and code act like a username and password on this device. It can contain letters, numbers, or special characters, but must be exactly 4 characters. There is currently no way to recover or change it.</p>
+        </div>
+        <p class="form-note">Your profile, credential hash, and history stay in this browser and are not uploaded.</p>
+        <p id="identity-error" class="budget-warning" role="alert" hidden></p>
+        <button id="identity-submit" class="primary-button" type="submit">Open my profile →</button>
+        <hr>
+        <h2 class="identity-subtitle">Just want to explore?</h2>
+        <p class="form-note">Anonymous tryout creates a plan for this browser tab without saving a profile, access code, history, or recommendations.</p>
+        <button id="anonymous-tryout" class="nav-button full-width" type="button">Try Flose anonymously</button>
       </form>
 
       <section id="profile-welcome" hidden>
@@ -85,7 +102,7 @@
         </div>
         <div class="profile-actions">
           <button id="edit-profile" class="nav-button" type="button">Edit saved preferences</button>
-          <button id="change-profile" class="nav-button" type="button">Use another name</button>
+          <button id="change-profile" class="nav-button" type="button">Sign out / use another profile</button>
         </div>
         <div id="pattern-grid" class="pattern-grid" hidden></div>
         <details id="history-details" class="food-details" hidden>
